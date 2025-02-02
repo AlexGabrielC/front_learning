@@ -1,5 +1,10 @@
-"use client"
+"use client";
 
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+import { logout } from "@/lib/authSlice";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button"
 import {
   BadgeCheck,
   Bell,
@@ -7,6 +12,7 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
+  MailOpen
 } from "lucide-react"
 
 import {
@@ -30,17 +36,21 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+export function NavUser() {
+
+  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
   const { isMobile } = useSidebar()
 
+  if (!user) {
+    return (
+      <Button onClick={() => router.push("/login")}>
+        <MailOpen /> Login with Email
+      </Button>
+    );
+  }
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -102,7 +112,11 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+             onClick={() => {
+              dispatch(logout());
+              router.push("/login");
+            }}>
               <LogOut />
               Log out
             </DropdownMenuItem>
