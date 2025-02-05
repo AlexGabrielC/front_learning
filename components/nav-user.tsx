@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/lib/store";
-import { fetchUserSession, logoutUser } from "@/lib/authSlice";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { RootState, AppDispatch } from "@/lib/store";
+import { logoutUser } from "@/lib/authSlice";
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,13 +14,13 @@ import {
   LogOut,
   Sparkles,
   MailOpen
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/components/ui/avatar"
+} from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,28 +29,34 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 export function NavUser() {
-  const { data: session } = useSession();
   const { user } = useSelector((state: RootState) => state.auth);
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
+  const { isMobile } = useSidebar();
 
-  const { isMobile } = useSidebar()
+  const userName = user?.name || "Guest";
+  const userEmail = user?.email || "No email";
+  const userAvatar = user?.avatar || "/default-avatar.png";
+  const isGoogleUser = user?.token === null;
 
-  useEffect(() => {
-    if (session) {
-      dispatch(fetchUserSession()); // ✅ No more TypeScript error
+  const handleLogout = () => {
+    if (isGoogleUser) {
+      signOut();
+    } else {
+      dispatch(logoutUser());
     }
-  }, [dispatch, session]);
-  
+    router.push("/login");
+  };
+
   if (!user) {
     return (
       <Button onClick={() => router.push("/login")}>
@@ -69,12 +74,12 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.image || user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">{user.name.charAt(0)}</AvatarFallback>
+                <AvatarImage src={userAvatar} alt={userName} />
+                <AvatarFallback className="rounded-lg">{userName.charAt(0) || "?"}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-semibold">{userName}</span>
+                <span className="truncate text-xs">{userEmail}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -88,12 +93,12 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.image || user.avatar} alt={user.name}/>
-                  <AvatarFallback className="rounded-lg">{user.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={userAvatar} alt={userName} />
+                  <AvatarFallback className="rounded-lg">{userName.charAt(0) || "?"}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-semibold">{userName}</span>
+                  <span className="truncate text-xs">{userEmail}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -120,7 +125,7 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>
@@ -128,5 +133,5 @@ export function NavUser() {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

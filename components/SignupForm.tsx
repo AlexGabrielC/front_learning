@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
+import { UserService } from "@/services/UserService";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,44 +15,42 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function SignupForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
+export function SignupForm() {
   const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", password: "", avatar: "" });
   const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Vérification de l'email
+  // Check if the email is available
   const checkEmailAvailability = async () => {
     try {
-      const response = await axios.post("https://api.escuelajs.co/api/v1/users/is-available", {
-        email: form.email,
-      });
-      setEmailAvailable(!response.data.isAvailable); // ! pck api complement bug renvoie false a tout ...
+      const isAvailable = await UserService.checkEmailAvailability(form.email);
+      setEmailAvailable(!isAvailable);
     } catch (err) {
-      console.error("Erreur lors de la vérification de l'email", err);
+      console.error("Error checking email availability", err);
     }
   };
 
-  // Inscription de l'utilisateur
+  // Handle signup
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emailAvailable) {
-      setError("Cet email est déjà utilisé.");
+    if (emailAvailable) {
+      setError("This email is already used.");
       return;
     }
+
     try {
-      const response = await axios.post("https://api.escuelajs.co/api/v1/users/", form);
-      if (response.status === 201) {
-        router.push("/login"); // Redirige vers la page de connexion
+      const response = await UserService.createUser(form);
+      if (response) {
+        router.push("/login");
       }
     } catch (err) {
-      setError("Erreur lors de l'inscription.");
-      console.error("Erreur d'inscription", err);
+      setError("Signup failed. Please try again.");
     }
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div  className="max-w-md mx-auto mt-10">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Inscription</CardTitle>

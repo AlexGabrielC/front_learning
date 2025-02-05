@@ -1,27 +1,49 @@
 "use client";
 
+"use client";
+
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { updateUserProfile } from "@/lib/authSlice";
-import { RootState } from "@/lib/store";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { UserService } from "@/services/UserService";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
 
-export function ProfileUpdateModal() {
-  const dispatch = useDispatch<any>();
-  const { user } = useSelector((state: RootState) => state.auth);
+interface ProfileUpdateModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function ProfileUpdateModal({ isOpen, onClose }: ProfileUpdateModalProps) {
+  const router = useRouter();
+  const user = useSelector((state: RootState) => state.auth.user);
   const [form, setForm] = useState({
-    email: user?.email || "",
-    name: user?.name || "",
-    password: "",
-    avatar: user?.avatar || user?.image || "",
+    email: user?.email || null,
+    password: user?.password || null,
+    name: user?.name || null,
+    avatar: user?.avatar || null,
   });
+  const [error, setError] = useState<string | null>(null);
 
+  // Handle profile update
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await dispatch(updateUserProfile(form));
+    if (!user?.token) {
+      setError("Unauthorized: You must be logged in to update your profile.");
+      return;
+    }
+    try {
+      const updatedUser = await UserService.updateUser(user.id, form, user.token);
+      if (updatedUser) {
+        router.refresh();
+        onClose();
+      }
+    } catch (err) {
+      setError("Failed to update profile. Please try again.");
+    }
   };
 
   return (

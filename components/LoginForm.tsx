@@ -1,60 +1,64 @@
 "use client";
 
+
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { loginUser } from "@/lib/authSlice";
-import { signIn } from "next-auth/react";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { signIn, getSession} from "next-auth/react";
+import { loginUser, loginWithGoogle } from "@/lib/authSlice";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { RootState } from "@/lib/store";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
-export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+interface LoginFormProps {
+  className?: string;
+}
+
+interface GoogleUserData {
+  name: string;
+  email: string;
+  avatar: string;
+  token: null;
+}
+
+
+export function LoginForm({ className }: LoginFormProps) {
+  const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch();
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const authState = useSelector((state: RootState) => state.auth);
 
-  const handleLogin = async (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      const response = await fetch("https://api.escuelajs.co/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const result = await dispatch(
+        loginUser({ email, password }) as any // Ensure the correct dispatch type
+      ).unwrap();
+      if (result) {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setError("Invalid email or password");
+    }
+  };
 
-      if (!response.ok) throw new Error("Invalid credentials");
-
-      const data = await response.json();
-
-      dispatch(
-        loginUser({
-          name: "User",
-          email,
-          avatar: "https://via.placeholder.com/150",
-        })
-      );
-
+  const handleGoogleLogin = async () => {
+    try {
+      await signIn("google", { redirect: false });
+      dispatch(loginWithGoogle() as any);
       router.push("/dashboard");
-    } catch (error) {
-      console.error("Login failed:", error);
+    } catch (err) {
+      setError("Google login failed");
     }
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
@@ -63,14 +67,14 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin}>
+          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -94,7 +98,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
               <Button type="submit" className="w-full">
                 Login
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
+              <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
                 Login with Google
               </Button>
             </div>
