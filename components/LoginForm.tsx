@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { loginUser, fetchUserProfile } from "@/lib/authSlice";
-import { RootState } from "@/lib/store";
+import { useDispatch } from "react-redux";
+import { loginUser } from "@/lib/authSlice";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,17 +18,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
-  const dispatch = useDispatch<any>();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const dispatch = useDispatch();
   const router = useRouter();
-  const { error } = useSelector((state: RootState) => state.auth);
-  const [form, setForm] = useState({ email: "", password: "" });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const action = await dispatch(loginUser(form));
-    if (loginUser.fulfilled.match(action)) {
-      await dispatch(fetchUserProfile());
+
+    try {
+      const response = await fetch("https://api.escuelajs.co/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) throw new Error("Invalid credentials");
+
+      const data = await response.json();
+
+      dispatch(
+        loginUser({
+          name: "User",
+          email,
+          avatar: "https://via.placeholder.com/150",
+        })
+      );
+
       router.push("/dashboard");
+    } catch (error) {
+      console.error("Login failed:", error);
     }
   };
 
@@ -36,8 +57,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Connexion</CardTitle>
-          <CardDescription>Entrez vos identifiants pour accéder à votre compte</CardDescription>
+          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardDescription>
+            Enter your email below to login to your account
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin}>
@@ -48,39 +71,37 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                   id="email"
                   type="email"
                   placeholder="m@example.com"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Mot de passe</Label>
+                  <Label htmlFor="password">Password</Label>
                   <a href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
-                    Mot de passe oublié ?
+                    Forgot your password?
                   </a>
                 </div>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
               <Button type="submit" className="w-full">
-                Se connecter
+                Login
               </Button>
-              <Button variant="outline" className="w-full">
-                Connexion avec Google
+              <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
+                Login with Google
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              Vous n'avez pas de compte ?{" "}
-              <a href="/signup" className="underline underline-offset-4 text-blue-600 hover:text-blue-800">
-                S'inscrire
+              Don&apos;t have an account?{" "}
+              <a href="/signup" className="underline underline-offset-4">
+                Sign up
               </a>
             </div>
           </form>

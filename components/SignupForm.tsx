@@ -27,7 +27,7 @@ export function SignupForm({ className, ...props }: React.ComponentPropsWithoutR
       const response = await axios.post("https://api.escuelajs.co/api/v1/users/is-available", {
         email: form.email,
       });
-      setEmailAvailable(response.data.isAvailable);
+      setEmailAvailable(!response.data.isAvailable); // ! pck api complement bug renvoie false a tout ...
     } catch (err) {
       console.error("Erreur lors de la vérification de l'email", err);
     }
@@ -56,17 +56,17 @@ export function SignupForm({ className, ...props }: React.ComponentPropsWithoutR
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Inscription</CardTitle>
-          <CardDescription>Remplissez les informations ci-dessous pour créer un compte.</CardDescription>
+          <CardDescription>Complete this information to create an account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="name">Nom</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Votre nom"
+                  placeholder="Your name"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   required
@@ -86,10 +86,10 @@ export function SignupForm({ className, ...props }: React.ComponentPropsWithoutR
                   onBlur={checkEmailAvailability} // Vérification lors de la sortie du champ
                   required
                 />
-                {emailAvailable === false && <p className="text-red-500 text-sm">Cet email est déjà utilisé.</p>}
+                {emailAvailable === false && <p className="text-red-500 text-sm">This email is already used</p>}
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">Mot de passe</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -112,13 +112,13 @@ export function SignupForm({ className, ...props }: React.ComponentPropsWithoutR
               </div>
               {error && <p className="text-red-500 text-sm">{error}</p>}
               <Button type="submit" className="w-full">
-                S'inscrire
+                Sign Up
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              Vous avez déjà un compte ?{" "}
+              You already have an account ?{""}
               <a href="/login" className="underline underline-offset-4 text-blue-600 hover:text-blue-800">
-                Se connecter
+                Login
               </a>
             </div>
           </form>

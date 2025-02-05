@@ -1,38 +1,13 @@
-
-
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { getSession, signOut } from "next-auth/react";
 import axios from "axios";
 
-const API_URL = "https://api.escuelajs.co/api/v1/auth";
-
-export const loginUser = createAsyncThunk(
-  "auth/loginUser",
-  async ({ email, password }: { email: string; password: string }, thunkAPI) => {
-    try {
-      const response = await axios.post(`${API_URL}/login`, { email, password });
-      const token = response.data.access_token;
-      //localStorage.setItem("token", token); // Sauvegarde locale faille de securite
-      return token;
-    } catch (error) {
-      return thunkAPI.rejectWithValue("Invalid credentials");
-    }
-  }
-);
-
-export const fetchUserProfile = createAsyncThunk("auth/fetchUserProfile", async (_, thunkAPI) => {
-  //const token = localStorage.getItem("token"); // Faille de securite
-  const { auth } = thunkAPI.getState() as { auth: AuthState };
-	if (!auth.token) return thunkAPI.rejectWithValue("No token found");
-
-  try {
-    const response = await axios.get(`${API_URL}/profile`, {
-      headers: { Authorization: `Bearer ${auth.token}` },
-    });
-    return response.data;
-  } catch (error) {
-    return thunkAPI.rejectWithValue("Failed to fetch profile");
-  }
-});
+// Define user type
+type User = {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+} | null;
 
 interface AuthState {
   token: string | null;
@@ -40,38 +15,50 @@ interface AuthState {
   error: string | null;
 }
 
-const initialState: AuthState = {
-  token: null,
-  user: null,
-  error: null,
-};
+// Fetch user session from NextAuth
+export const fetchUserSession = createAsyncThunk<User>(
+  "auth/fetchSession",
+  async () => {
+    const session = await getSession();
+    return session?.user || null;
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
-  initialState,
+  initialState: { user: null as User },
   reducers: {
-    logout: (state) => {
-      state.token = null;
+    loginUser: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
+    },
+    logoutUser: (state) => {
       state.user = null;
+      signOut(); // Logs out from NextAuth
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.token = action.payload;
-        state.error = null;
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.error = action.payload as string;
-      })
-      .addCase(fetchUserProfile.fulfilled, (state, action) => {
-        state.user = action.payload;
-      })
-      .addCase(fetchUserProfile.rejected, (state, action) => {
-        state.error = action.payload as string;
-      });
+    builder.addCase(fetchUserSession.fulfilled, (state, action) => {
+      state.user = action.payload;
+    });
   },
 });
 
-export const { logout } = authSlice.actions;
+export const updateUserProfile = createAsyncThunk(
+  "auth/updateUserProfile",
+  async (updatedData: { email?: string; name?: string; password?: string; avatar?: string }, thunkAPI) => {
+    const { auth } = thunkAPI.getState() as { auth: AuthState };
+    if (!auth.token || !auth.user) return thunkAPI.rejectWithValue("No token or user data found");
+
+    try {
+      const response = await axios.put(`https://api.escuelajs.co/api/v1/users/${auth.user.id}`, updatedData, {
+        headers: { Authorization: `Bearer ${auth.token}` },
+      });
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue("Failed to update profile");
+    }
+  }
+);
+
+export const { loginUser, logoutUser } = authSlice.actions;
 export default authSlice.reducer;
