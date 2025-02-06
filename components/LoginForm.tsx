@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-import { signIn, getSession} from "next-auth/react";
+import { signIn} from "next-auth/react";
 import { loginUser, loginWithGoogle } from "@/lib/authSlice";
 import { Button } from "@/components/ui/button";
 import { RootState } from "@/lib/store";
@@ -15,14 +15,6 @@ import { Label } from "@/components/ui/label";
 interface LoginFormProps {
   className?: string;
 }
-
-interface GoogleUserData {
-  name: string;
-  email: string;
-  avatar: string;
-  token: null;
-}
-
 
 export function LoginForm({ className }: LoginFormProps) {
   const [error, setError] = useState<string | null>(null);

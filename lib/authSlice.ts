@@ -3,10 +3,11 @@ import { AuthService } from "@/services/AuthService";
 import { getSession } from "next-auth/react";
 
 interface UserState {
+  id? : number;
   name: string;
   email: string;
   avatar: string;
-  password : string;
+  password: string;
   role : string;
   token: string | null;
 }

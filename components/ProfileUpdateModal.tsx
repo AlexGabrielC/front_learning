@@ -21,10 +21,11 @@ export function ProfileUpdateModal({ isOpen, onClose }: ProfileUpdateModalProps)
   const router = useRouter();
   const user = useSelector((state: RootState) => state.auth.user);
   const [form, setForm] = useState({
-    email: user?.email || null,
-    password: user?.password || null,
-    name: user?.name || null,
-    avatar: user?.avatar || null,
+    id: user?.id || "",
+    email: user?.email || "",
+    password: user?.password || "",
+    name: user?.name || "",
+    avatar: user?.avatar || "",
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +37,7 @@ export function ProfileUpdateModal({ isOpen, onClose }: ProfileUpdateModalProps)
       return;
     }
     try {
-      const updatedUser = await UserService.updateUser(user.id, form, user.token);
+      const updatedUser = await UserService.updateUser(user.id!, form, user.token);
       if (updatedUser) {
         router.refresh();
         onClose();
@@ -58,7 +59,7 @@ export function ProfileUpdateModal({ isOpen, onClose }: ProfileUpdateModalProps)
             <Label>Email</Label>
             <Input
               type="email"
-              value={form.email}
+              value={form.email || ""}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
           </div>

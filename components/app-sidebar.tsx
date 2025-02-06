@@ -18,6 +18,8 @@ import {
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
+import { useSelector } from "react-redux"
+import { RootState } from "@/lib/store"
 import {
   Sidebar,
   SidebarContent,
@@ -25,6 +27,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+
 
 // This is sample data.
 const data = {
@@ -37,14 +40,19 @@ const data = {
   ],
   navMain: [
     {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: BookOpen,
+    },
+    {
       title: "Catalog",
       url: "/catalog",
       icon: SquareTerminal,
-      isActive: true,
+      isCollapsible: true,
       items: [
         {
           title: "History",
-          url: "/catalog/history",
+          url: "/history",
         },
         {
           title: "Starred",
@@ -57,44 +65,19 @@ const data = {
       ],
     },
     {
-      title: "Models",
+      title: "Users",
       url: "#",
       icon: Bot,
+      isCollapsible: true,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "You",
+          url: "/users/me",
         },
         {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "All",
+          url: "/users",
+          auth: true
         },
       ],
     },
@@ -102,6 +85,7 @@ const data = {
       title: "Settings",
       url: "#",
       icon: Settings2,
+      isCollapsible: true,
       items: [
         {
           title: "General",

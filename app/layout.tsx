@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import Providers from "@/components/Providers"; // ✅ Use only this
+import Providers from "@/components/Providers"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers> {/* ✅ Now all Providers are wrapped correctly */}
+        <Providers> 
           <SidebarProvider>
             <AppSidebar />
             {children}
