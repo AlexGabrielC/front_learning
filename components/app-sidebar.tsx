@@ -45,6 +45,22 @@ const data = {
       icon: BookOpen,
     },
     {
+      title: "Products",
+      url: "/products",
+      icon: SquareTerminal,
+      isCollapsible: true,
+      items: [
+        {
+          title: "All Products",
+          url: "/products",
+        },
+        {
+          title: "Create it",
+          url: "/products/add",
+        },
+      ],
+    },
+    {
       title: "Catalog",
       url: "/catalog",
       icon: SquareTerminal,
@@ -92,15 +108,7 @@ const data = {
           url: "#",
         },
         {
-          title: "Team",
-          url: "#",
-        },
-        {
           title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
           url: "#",
         },
       ],

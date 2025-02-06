@@ -3,6 +3,20 @@ import axios from "axios";
 // Define API base URL
 const API_URL = "https://api.escuelajs.co/api/v1/users";
 
+const isValidImageUrl = (url: string) => {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+const transformUserData = (user: any) => ({
+  ...user,
+  avatar: isValidImageUrl(user.avatar) ? user.avatar : "/default-avatar.png",
+});
+
 export const UserService = {
   // 🔹 Get all users (Admin only)
   getAllUsers: async (token: string) => {
@@ -10,7 +24,7 @@ export const UserService = {
       const response = await axios.get(API_URL, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data;
+      return response.data.map(transformUserData);
     } catch (error) {
       throw new Error("Unauthorized: Admin access required");
     }
@@ -22,7 +36,7 @@ export const UserService = {
       const response = await axios.get(`${API_URL}/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data;
+      return transformUserData(response.data);
     } catch (error) {
       throw new Error("Failed to fetch user details");
     }
@@ -32,7 +46,7 @@ export const UserService = {
   createUser: async (userData: { name: string; email: string; password: string; avatar: string }) => {
     try {
       const response = await axios.post(API_URL, userData);
-      return response.data;
+      return transformUserData(response.data);
     } catch (error) {
       throw new Error("Failed to create user");
     }
@@ -44,7 +58,7 @@ export const UserService = {
       const response = await axios.put(`${API_URL}/${id}`, updateData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data;
+      return transformUserData(response.data);
     } catch (error) {
       throw new Error("Unauthorized: Cannot update user details");
     }

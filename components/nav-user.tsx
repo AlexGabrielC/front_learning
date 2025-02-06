@@ -1,7 +1,7 @@
 "use client";
 
 import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "@/lib/store";
+import { AppDispatch, RootState } from "@/lib/store";
 import { logoutUser } from "@/lib/authSlice";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
