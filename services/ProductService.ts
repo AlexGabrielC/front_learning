@@ -75,7 +75,13 @@ const ProductService = {
     }
   },
 
-  updateProduct: async (id: number, updatedData: Partial<{ title: string; price: number }>) => {
+  updateProduct: async (id: number, updatedData: Partial<{ 
+      title: string;
+      price: number;
+      description: string;
+      categoryId: number;
+      images: string[]; 
+  }>) => {
     try {
       const response = await axios.put(`${API_URL}/products/${id}`, updatedData);
       return response.data;

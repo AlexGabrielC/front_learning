@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import ProductService from "@/services/ProductService";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { ProductUpdateModal } from "@/components/ProductUpdateModal";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Product {
   id: number;
@@ -31,6 +33,9 @@ export default function ProductDetails() {
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -46,6 +51,19 @@ export default function ProductDetails() {
 
     fetchProduct();
   }, [id]);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await ProductService.deleteProduct(Number(id));
+      router.push("/products"); // Redirect after successful deletion
+    } catch (err) {
+      setError("Failed to delete product.");
+    } finally {
+      setDeleting(false);
+      setDeleteModalOpen(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -76,9 +94,10 @@ export default function ProductDetails() {
                 {product.images.map((image, index) => (
                   <CarouselItem key={index}>
                     <img
-                      src={image}
-                      alt={`Product Image ${index + 1}`}
-                      className="w-full h-72 object-cover rounded-md"
+                      src={image || "/default-product.png"}
+                      alt={product.title}
+                      onError={(e) => (e.currentTarget.src = "/default-product.png")}
+                      className="w-full h-40 object-cover rounded-lg"
                     />
                   </CarouselItem>
                 ))}
@@ -100,11 +119,28 @@ export default function ProductDetails() {
           <p className="text-xl font-bold text-blue-500 mt-4">${product?.price}</p>
 
           <div className="mt-6 flex justify-between">
-            <Button variant="outline">Back to Products</Button>
-            <Button>Add to Cart</Button>
+            <Button variant="outline" onClick={() => router.push(`/products`)}>Back to Products</Button>
+            <ProductUpdateModal isOpen={true} onClose={() => {}} id={Number(id)} />
+            <Button variant="destructive" onClick={() => setDeleteModalOpen(true)}>Delete</Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProductService from "@/services/ProductService";
 
 const ProductFilters = ({ onFilter }: { onFilter: (filters: any) => void }) => {
@@ -61,14 +61,16 @@ const ProductFilters = ({ onFilter }: { onFilter: (filters: any) => void }) => {
         value={priceMax}
         onChange={(e) => setPriceMax(e.target.value)}
       />
-      <Select onValueChange={(value) => setCategoryId(Number(value))}>
-        <SelectValue placeholder="Select a category" />
+      <Select value={categoryId ? String(categoryId) : ""} onValueChange={(value) => setCategoryId(Number(value))}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select a category" />
+        </SelectTrigger>
         <SelectContent>
-            {categories.map((category) => (
+          {categories.map((category) => (
             <SelectItem key={category.id} value={String(category.id)}>
-                {category.name}
+              {category.name}
             </SelectItem>
-            ))}
+          ))}
         </SelectContent>
       </Select>
       <Button onClick={handleApplyFilters}>Apply Filters</Button>

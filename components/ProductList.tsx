@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext, PaginationLink } from "@/components/ui/pagination";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import ProductFilters from "./ProductFilters";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id: number;
@@ -23,6 +24,7 @@ export default function ProductList() {
   const [limit, setLimit] = useState(10);
   const [count, setCount] = useState(1);
   const [filters, setFilters] = useState({});
+  const router = useRouter();
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -97,7 +99,7 @@ export default function ProductList() {
               <CardContent>
                 <CardTitle className="text-lg font-semibold">{product.title}</CardTitle>
                 <p className="text-blue-500 font-bold mt-2">${product.price}</p>
-                <Button className="mt-4 w-full" variant="outline">
+                <Button className="mt-4 w-full" variant="outline" onClick={() => router.push(`/products/${product.id}`)}>
                   View Product
                 </Button>
               </CardContent>

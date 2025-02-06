@@ -61,22 +61,18 @@ const data = {
       ],
     },
     {
-      title: "Catalog",
-      url: "/catalog",
+      title: "Category",
+      url: "/category",
       icon: SquareTerminal,
       isCollapsible: true,
       items: [
         {
-          title: "History",
-          url: "/history",
+          title: "All Categories",
+          url: "/category",
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          title: "Create it",
+          url: "/category/add",
         },
       ],
     },
