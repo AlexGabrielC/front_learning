@@ -23,24 +23,25 @@ export default function ProductList() {
   const [pass, setPass] = useState(10);
   const [limit, setLimit] = useState(10);
   const [count, setCount] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [filters, setFilters] = useState({});
   const router = useRouter();
 
   const fetchProducts = useCallback(async () => {
     try {
       const fetchedProducts = await ProductService.getAllProducts(offset, limit, filters);
-    setProducts(fetchedProducts);
+      setProducts(fetchedProducts);
+      setHasMore(fetchedProducts.length === pass);
     } catch (err) {
       setError("Failed to load products.");
     }
   }, [offset, limit, filters]);
 
   useEffect(() => {
-    fetchProducts();
   }, [fetchProducts]);
 
   const handleNextPage = () => {
-    if (offset + pass < products.length+1) {
+    if (hasMore) {
       setOffset(offset + pass);
       setLimit(limit + pass);
       setCount(count+1);
@@ -69,7 +70,7 @@ export default function ProductList() {
 
       {/* Sélecteur de nombre de produits par page */}
       <div className="flex justify-end mb-4">
-        <Select onValueChange={(value) => setPass(parseInt(value))} defaultValue="10">
+        <Select onValueChange={(value: string) => { const parsedValue = parseInt(value); setPass(parsedValue); setLimit(parsedValue); }} defaultValue="10">
           <SelectTrigger className="w-32">
             <span>Show {pass}</span>
           </SelectTrigger>

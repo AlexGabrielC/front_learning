@@ -12,8 +12,6 @@ const isValidImageUrl = (url: string) => {
 };
 
 const transformProductData = (product: any) => {
-  console.log("Original product:", product);
-
   const parsedImages = product.images.map((img: string) => {
     try {
       let urls = JSON.parse(img); // Essayer de parser si format JSON stringifié
@@ -43,8 +41,6 @@ const ProductService = {
 
       const params: any = { offset, limit, ...filters };
       const response = await axios.get(`${API_URL}/products`, { params });
-
-      console.log("Fetched products:", response.data);
       return response.data.map(transformProductData);
     } catch (error) {
       throw new Error("Failed to fetch products");
