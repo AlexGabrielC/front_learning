@@ -50,6 +50,8 @@ export function NavUser() {
 
   const handleLogout = () => {
     if (isGoogleUser) {
+      console.log("Signing out from Google");
+      dispatch(logoutUser());
       signOut();
     } else {
       dispatch(logoutUser());

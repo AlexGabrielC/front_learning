@@ -78,7 +78,7 @@ export function NavMain({
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ) : (
-                      <div></div>
+                      <div key={subItem.title}></div>
                     )
                   )}
                 </SidebarMenuSub>

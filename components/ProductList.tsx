@@ -20,7 +20,6 @@ export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
-  const [pass, setPass] = useState(10);
   const [limit, setLimit] = useState(10);
   const [count, setCount] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -29,29 +28,29 @@ export default function ProductList() {
 
   const fetchProducts = useCallback(async () => {
     try {
+      console.log("Fetching products with offset", offset, "and limit", limit);
       const fetchedProducts = await ProductService.getAllProducts(offset, limit, filters);
       setProducts(fetchedProducts);
-      setHasMore(fetchedProducts.length === pass);
+      setHasMore(fetchedProducts.length === limit);
     } catch (err) {
       setError("Failed to load products.");
     }
   }, [offset, limit, filters]);
 
   useEffect(() => {
+    fetchProducts();
   }, [fetchProducts]);
 
   const handleNextPage = () => {
     if (hasMore) {
-      setOffset(offset + pass);
-      setLimit(limit + pass);
+      setOffset(offset + limit);
       setCount(count+1);
     }
   };
 
   const handlePreviousPage = () => {
-    if (offset - pass >= 0) {
-      setOffset(offset - pass);
-      setLimit(limit - pass);
+    if (offset - limit >= 0) {
+      setOffset(offset - limit);
       setCount(count-1);
     }
   };
@@ -70,14 +69,15 @@ export default function ProductList() {
 
       {/* Sélecteur de nombre de produits par page */}
       <div className="flex justify-end mb-4">
-        <Select onValueChange={(value: string) => { const parsedValue = parseInt(value); setPass(parsedValue); setLimit(parsedValue); }} defaultValue="10">
+        <Select onValueChange={(value: string) => { const parsedValue = parseInt(value); setLimit(parsedValue); setCount(1); setOffset(0)}} defaultValue="10">
           <SelectTrigger className="w-32">
-            <span>Show {pass}</span>
+            <span>Show {limit}</span>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="10">10</SelectItem>
             <SelectItem value="20">20</SelectItem>
             <SelectItem value="50">50</SelectItem>
+            <SelectItem value="9999">All</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -120,7 +120,7 @@ export default function ProductList() {
                 <PaginationLink>{count}</PaginationLink>
             </PaginationItem>
             <PaginationItem>
-              {offset + limit < products.length+1 ? (
+              {hasMore ? (
                 <PaginationNext onClick={handleNextPage} />
               ) : (
                 <PaginationNext onClick={handleNextPage} className="opacity-50 pointer-events-none" />

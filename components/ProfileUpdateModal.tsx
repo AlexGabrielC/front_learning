@@ -1,13 +1,11 @@
 "use client";
 
-"use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { UserService } from "@/services/UserService";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
@@ -53,7 +51,10 @@ export function ProfileUpdateModal({ isOpen, onClose }: ProfileUpdateModalProps)
         <Button variant="outline">Edit Profile</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>Edit Profile</DialogTitle> {/* ✅ Added DialogTitle for accessibility */}
+        <DialogHeader>
+          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogDescription>Update your profile information below.</DialogDescription>
+        </DialogHeader>
         <form onSubmit={handleUpdate} className="space-y-4">
           <div>
             <Label>Email</Label>

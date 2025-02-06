@@ -25,16 +25,17 @@ export function SignupForm() {
   const checkEmailAvailability = async () => {
     try {
       const isAvailable = await UserService.checkEmailAvailability(form.email);
-      setEmailAvailable(!isAvailable);
+      setEmailAvailable(isAvailable);
     } catch (err) {
       console.error("Error checking email availability", err);
+      setError("Failed to check email availability.");
     }
   };
 
   // Handle signup
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (emailAvailable) {
+    if (emailAvailable === false) {
       setError("This email is already used.");
       return;
     }
@@ -50,10 +51,10 @@ export function SignupForm() {
   };
 
   return (
-    <div  className="max-w-md mx-auto mt-10">
+    <div className="max-w-md mx-auto mt-10">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Inscription</CardTitle>
+          <CardTitle className="text-2xl">Sign Up</CardTitle>
           <CardDescription>Complete this information to create an account</CardDescription>
         </CardHeader>
         <CardContent>
@@ -81,7 +82,7 @@ export function SignupForm() {
                     setForm({ ...form, email: e.target.value });
                     setEmailAvailable(null); // Reset email check
                   }}
-                  onBlur={checkEmailAvailability} // Vérification lors de la sortie du champ
+                  onBlur={checkEmailAvailability} // Check email availability on blur
                   required
                 />
                 {emailAvailable === false && <p className="text-red-500 text-sm">This email is already used</p>}
@@ -114,7 +115,7 @@ export function SignupForm() {
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              You already have an account ?{""}
+              Already have an account?{" "}
               <a href="/login" className="underline underline-offset-4 text-blue-600 hover:text-blue-800">
                 Login
               </a>

@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 
 const API_URL = "https://api.escuelajs.co/api/v1";
 
@@ -11,20 +11,38 @@ const isValidImageUrl = (url: string) => {
   }
 };
 
+const isJsonString = (str: string) => {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+const cleanJsonString = (str: string) => {
+  // Remove leading and trailing quotes and escape sequences
+  return str.replace(/^"|"$/g, '').replace(/\\"/g, '"');
+};
+
 const transformProductData = (product: any) => {
   const parsedImages = product.images.map((img: string) => {
-    try {
-      let urls = JSON.parse(img); // Essayer de parser si format JSON stringifié
-      
-      if (Array.isArray(urls) && urls.length > 0) {
-        const validUrl = isValidImageUrl(urls[0]) ? urls[0] : "/default-product.png";
-        return validUrl;
+    const cleanedImg = cleanJsonString(img);
+
+    if (isJsonString(cleanedImg)) {
+      try {
+        let urls = JSON.parse(cleanedImg); // Try to parse if JSON stringified
+
+        if (Array.isArray(urls) && urls.length > 0) {
+          const validUrl = isValidImageUrl(urls[0]) ? urls[0] : "/default-product.png";
+          return validUrl;
+        }
+      } catch (error) {
+        console.log("JSON parsing failed for:", cleanedImg);
       }
-    } catch (error) {
-      console.log("JSON parsing failed for:", img);
     }
 
-    const finalUrl = isValidImageUrl(img) ? img : "/default-product.png";
+    const finalUrl = isValidImageUrl(cleanedImg) ? cleanedImg : "/default-product.png";
     return finalUrl;
   });
 
